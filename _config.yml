@@ -116,3 +116,10 @@ symbols_count_time:
   awl: 4  # 平均文字長度，中文為 2, 英文為 5, 預設為 4
   wpm: 275  # 一分鐘閱讀字數
   suffix: mins.
+
+#search
+  search:
+  path: search.xml
+  field: post
+  format: html
+  limit: 10000
