@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  <entry>
+    <title>C#檔案壓縮搬移處理</title>
+    <url>/2022/02/06/C-%E6%AA%94%E6%A1%88%E5%A3%93%E7%B8%AE%E6%90%AC%E7%A7%BB%E8%99%95%E7%90%86/</url>
+    <content><![CDATA[<p>雖然這個Blog是藉由GitHub Pages代管，不過像是md檔和其他資料不是說要復原就復原的，要復原還要經過一段步驟，早上實作了一次實在是搞得頭很昏，找時間在照著教學做一次並把過程記錄下來以備不時之需。</p>
+<p>養成備份習慣是很重要的，不然資料不見了去資料救援還不一定能把資料救回來，所以我要讓我這Blog的檔案做個每日備份到雲端裡面。</p>
+<p>首先看了一下這資料夾的檔案非常瑣碎，才93M的空間卻有14392個檔案，這樣直接備份到雲端光同步就會耗掉相當大的資源，所以我的想法是把資料夾壓縮起來再備份到雲端就好了。<br><img src="https://i.imgur.com/gRrmYqo.png"></p>
+<span id="more"></span>
+<p>在專案中加入 System.IO.Compression.FileSystem 的元件參考，並使用命名空間</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">//使用的命名空間</span><br><span class="line">using System.IO.Compression;</span><br><span class="line">using System.IO;</span><br><span class="line"></span><br><span class="line">        static void Main(string[] args)</span><br><span class="line">        &#123;</span><br><span class="line">            //起始路徑</span><br><span class="line">            string startPath = @&quot;I:\Lynnblog&quot;; </span><br><span class="line">            //壓縮後的路徑</span><br><span class="line">            string zipPath = @&quot;D:\Lynnblog_backup.zip&quot;;</span><br><span class="line">            //如果檔案存在先刪除，避免產生檔案已存在的例外</span><br><span class="line">            if (File.Exists(zipPath))</span><br><span class="line">            &#123;</span><br><span class="line">                File.Delete(zipPath);</span><br><span class="line">            &#125;</span><br><span class="line">            </span><br><span class="line">                //壓縮檔案</span><br><span class="line">                ZipFile.CreateFromDirectory(startPath, zipPath);</span><br><span class="line">            &#125;</span><br><span class="line">            //確定檔案存在才執行搬移，避免錯誤</span><br><span class="line">            if (File.Exists(zipPath))</span><br><span class="line">            &#123;</span><br><span class="line">                //目標存放路徑</span><br><span class="line">                string destinationFile = @&quot;C:\Users\Lynn\iCloudDrive\backup\Lynnblog_backup.zip&quot;;</span><br><span class="line">                //搬移，最後的true是覆蓋檔案的意思</span><br><span class="line">                File.Copy(zipPath, destinationFile, true);</span><br><span class="line">                //最後一樣把原本的壓縮檔刪除</span><br><span class="line">                File.Delete(zipPath);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>建置好後使用工作排程器去執行該專案bin資料夾下的可執行檔就可以正常使用了！<br>現在先暫時這樣就好，以後如果心血來潮再一次備份多天一點順便弄個Log檔。</p>
+<h6 id="參考網址："><a href="#參考網址：" class="headerlink" title="參考網址："></a>參考網址：</h6><p><a href="https://docs.microsoft.com/zh-tw/dotnet/api/system.io.compression.zipfile?redirectedfrom=MSDN&amp;view=net-6.0">https://docs.microsoft.com/zh-tw/dotnet/api/system.io.compression.zipfile?redirectedfrom=MSDN&amp;view=net-6.0</a><br><a href="https://docs.microsoft.com/zh-tw/dotnet/csharp/programming-guide/file-system/how-to-copy-delete-and-move-files-and-folders">https://docs.microsoft.com/zh-tw/dotnet/csharp/programming-guide/file-system/how-to-copy-delete-and-move-files-and-folders</a></p>
+]]></content>
+      <categories>
+        <category>C#</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>LeetCode 20. Valid Parentheses (Easy)</title>
+    <url>/2022/02/07/LeetCode-20-Valid-Parentheses-Easy/</url>
+    <content><![CDATA[<p>Given a string s containing just the characters ‘(‘, ‘)’, ‘{‘, ‘}’, ‘[‘ and ‘]’, determine if the input string is valid.</p>
+<p>An input string is valid if:</p>
+<p>Open brackets must be closed by the same type of brackets.<br>Open brackets must be closed in the correct order.</p>
+<span id="more"></span>
+
+
+<p>Example :</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: &quot;()&quot;</span><br><span class="line">Output: true</span><br><span class="line"></span><br><span class="line">Input: s = &quot;()[]&#123;&#125;&quot;</span><br><span class="line">Output: true</span><br><span class="line"></span><br><span class="line">Input: s = &quot;(]&quot;</span><br><span class="line">Output: false</span><br></pre></td></tr></table></figure>
+<p>題目的要求是輸入一個字串，裡面的括號是成對的話回傳true沒有的話回傳false</p>
+<p>這邊就使用到Stack了，Stack可以當作是一個集合，裡面的資料是後進先出。<br><a href="https://docs.microsoft.com/zh-tw/dotnet/api/system.collections.stack?view=net-6.0">MSDN Stack類別</a></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">public class Solution &#123;</span><br><span class="line">    public bool IsValid(string s) &#123;</span><br><span class="line">            //宣告一個Dictionary，裡面新增括號</span><br><span class="line">          Dictionary&lt;char, char&gt; dic = new Dictionary&lt;char, char&gt;();</span><br><span class="line">            dic.Add(&#x27;&#125;&#x27;, &#x27;&#123;&#x27;);</span><br><span class="line">            dic.Add(&#x27;]&#x27;, &#x27;[&#x27;);</span><br><span class="line">            dic.Add(&#x27;)&#x27;, &#x27;(&#x27;);</span><br><span class="line">            //如果字串長度不是成對的直接return false</span><br><span class="line">            if (s.Length % 2 == 1)</span><br><span class="line">                return false;</span><br><span class="line">            //宣告一個stack裡面放字元</span><br><span class="line">            var stack = new Stack&lt;char&gt;();</span><br><span class="line">            //遍歷每個字串每個字元</span><br><span class="line">            for (int i = 0; i &lt; s.Length; i++)</span><br><span class="line">            &#123;</span><br><span class="line">                char c = s[i];</span><br><span class="line">                //如果c的字元是dic value裡的左括號，新增對應的右括號進去</span><br><span class="line">                if (dic.ContainsValue(c))</span><br><span class="line">                &#123;</span><br><span class="line">                    stack.Push(c);</span><br><span class="line">                &#125;</span><br><span class="line">                else</span><br><span class="line">                &#123;</span><br><span class="line">                    //如果stack都完全沒東西return false</span><br><span class="line">                    if (stack.Count == 0)</span><br><span class="line">                    &#123;</span><br><span class="line">                        return false;</span><br><span class="line">                    &#125;</span><br><span class="line">                    //如果stack最後進來的值跟c(右括號對右括號代表成對)</span><br><span class="line">                    if (stack.Peek() == dic[c])</span><br><span class="line">                    &#123;</span><br><span class="line">                        //移除最後進來的值</span><br><span class="line">                        stack.Pop();</span><br><span class="line">                    &#125;else return false;</span><br><span class="line">                    </span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            return stack.Count == 0;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>LeetCode</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>LeetCode 1. Two Sum (Easy)</title>
+    <url>/2022/02/06/LeetCode-1-Two-Sum-Easy/</url>
+    <content><![CDATA[<p><a href="https://leetcode.com/problems/two-sum/">https://leetcode.com/problems/two-sum/</a><br>題目的要求是給予一個int陣列和目標值，回傳目標值是陣列中哪兩個索引中加起來的。</p>
+<p>Example :</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: nums = [2,7,11,15], target = 9</span><br><span class="line">Output: [0,1]</span><br><span class="line">Explanation: Because nums[0] + nums[1] == 9, we return [0, 1].</span><br></pre></td></tr></table></figure>
+
+<p>想了想可以直接用兩個For迴圈暴力解掉，考慮到複雜度的問題這邊改用Dictinary的方式解題，Dictionary是由Key和Value組成，但是Key是不能重複的。</p>
+<p>我自己覺得這題的關鍵點在 left &#x3D; target - num[i] ; 這一行</p>
+<span id="more"></span>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">public class Solution &#123;</span><br><span class="line">    public int[] TwoSum(int[] nums, int target) &#123;</span><br><span class="line">            //宣告Dictionary temp 由兩個int組合</span><br><span class="line">            Dictionary&lt;int, int&gt; temp = new Dictionary&lt;int, int&gt;();</span><br><span class="line">            for (int i = 0; i &lt; nums.Length; i++)</span><br><span class="line">            &#123;</span><br><span class="line">                //把target的值減陣列裡面的元素的值只派給left</span><br><span class="line">                int left = target - nums[i];</span><br><span class="line">                //假如Dictionary裡面有left值，return回去兩值的索引值</span><br><span class="line">                if (temp.ContainsKey(left))</span><br><span class="line">                &#123;</span><br><span class="line">                    return new int[] &#123; temp[left], i &#125;;</span><br><span class="line">                &#125;</span><br><span class="line">                //如果temp裡面不存在nums裡的值，temp加入(key(值)、value(索引值))</span><br><span class="line">                if (!temp.ContainsKey(nums[i]))</span><br><span class="line">                &#123;</span><br><span class="line">                    temp.Add(nums[i], i);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            return null;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h6 id="tags-LeetCode"><a href="#tags-LeetCode" class="headerlink" title="tags: LeetCode"></a>tags: <code>LeetCode</code></h6>]]></content>
+      <categories>
+        <category>LeetCode</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>LeetCode 136. Single Number (Easy)</title>
+    <url>/2022/02/09/LeetCode-136-Single-Number-Easy/</url>
+    <content><![CDATA[<p>Given a non-empty array of integers nums, every element appears twice except for one. Find that single one.</p>
+<p>You must implement a solution with a linear runtime complexity and use only constant extra space.</p>
+<p>Example:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: nums = [2,2,1]</span><br><span class="line">Output: 1</span><br><span class="line"></span><br><span class="line">Input: [4,1,2,1,2]</span><br><span class="line">Output: 4</span><br></pre></td></tr></table></figure>
+
+<span id="more"></span>
+
+<p>找出陣列中只出現過一次的數字，這題直覺性的應該會使用Directory，首先判斷Key存不存在，如果存在value + 1，不存在的話把數字新增至Key裡面並且給予值 1，最後判斷Directory裡面Value等於1的值，回傳Key就好了。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">public class Solution &#123;</span><br><span class="line">    public int SingleNumber(int[] nums) &#123;</span><br><span class="line">            Dictionary&lt;int, int&gt; dic = new Dictionary&lt;int, int&gt; &#123; &#125;;</span><br><span class="line">            for (int i = 0; i &lt; nums.Length; i++)</span><br><span class="line">            &#123;</span><br><span class="line">                if (dic.ContainsKey(nums[i]))</span><br><span class="line">                &#123;</span><br><span class="line">                    dic[nums[i]]++;</span><br><span class="line">                &#125;else</span><br><span class="line">                &#123;</span><br><span class="line">                    dic.Add(nums[i], 1);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            if (dic.ContainsValue(1))</span><br><span class="line">            &#123;</span><br><span class="line">                return dic.FirstOrDefault(x =&gt; x.Value == 1).Key;</span><br><span class="line">            &#125;</span><br><span class="line">            else</span><br><span class="line">            &#123;</span><br><span class="line">                return 0;</span><br><span class="line">            &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>]]></content>
+      <categories>
+        <category>LeetCode</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>LeetCode 70. Climbing Stairs (Easy)</title>
+    <url>/2022/02/08/LeetCode-70-Climbing-Stairs-Easy/</url>
+    <content><![CDATA[<p>You are climbing a staircase. It takes n steps to reach the top.</p>
+<p>Each time you can either climb 1 or 2 steps. In how many distinct ways can you climb to the top?</p>
+<p>Example :</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: n = 2</span><br><span class="line">Output: 2</span><br><span class="line">Explanation: There are two ways to climb to the top.</span><br><span class="line">1. 1 step + 1 step</span><br><span class="line">2. 2 steps</span><br><span class="line"></span><br><span class="line">Input: n = 3</span><br><span class="line">Output: 3</span><br><span class="line">Explanation: There are three ways to climb to the top.</span><br><span class="line">1. 1 step + 1 step + 1 step</span><br><span class="line">2. 1 step + 2 steps</span><br><span class="line">3. 2 steps + 1 step</span><br></pre></td></tr></table></figure>
+<span id="more"></span>
+<p>題目的要求是算排列組合，給一個n階梯，一次只能踏 1 或 2步，算出所有的組合。<br>n &#x3D; 1 , result &#x3D; 1<br>n &#x3D; 2 , result &#x3D; 1 + 1<br>n &#x3D; 3 , result &#x3D; 2 + 1<br>n &#x3D; 4 , result &#x3D; 3 + 2<br>n &#x3D; 5 , result &#x3D; 5 + 3<br>發現公式是<br>f(n) &#x3D; f(n-1) + f(n-2)</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">public class Solution &#123;</span><br><span class="line">    public int ClimbStairs(int n) &#123;</span><br><span class="line">            if (n == 1 || n==2)</span><br><span class="line">            &#123;</span><br><span class="line">                return n;</span><br><span class="line">            &#125;</span><br><span class="line">            int prev = 1;</span><br><span class="line">            int cur = 2;</span><br><span class="line">            for (int i = 3; i &lt;= n; i++)</span><br><span class="line">            &#123;</span><br><span class="line">                int temp = cur;</span><br><span class="line">                cur = cur + prev;</span><br><span class="line">                prev = temp;</span><br><span class="line">            &#125;</span><br><span class="line">            return cur;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="https://i.imgur.com/DU7fAvZ.png"></p>
+]]></content>
+      <categories>
+        <category>LeetCode</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>ADO .NET筆記小結</title>
+    <url>/2022/02/11/ADO-NET%E7%AD%86%E8%A8%98%E5%B0%8F%E7%B5%90/</url>
+    <content><![CDATA[<p>ADO.NET是在.NET Framework裡負責資料存取的類別庫集，由連線資料來源connected data source（連線模式）以及離線資料模型disconnected data model（離線模式），兩種模式各有優缺點，共通點是一開始都必須建立與資料庫的連線。</p>
+<p>在選擇連接資料庫的模式時，必須謹慎考量使用狀況，因為兩種模式的實作方法與適合場合不一樣，日後要更改必須要全部重寫。</p>
+<span id="more"></span>
+
+<h2 id="連線模式"><a href="#連線模式" class="headerlink" title="連線模式"></a>連線模式</h2><p>直接跟資料庫進行連線，可以直接看到資料庫的最新紀錄<br>主要依靠DataReader</p>
+<p>適合使用環境：</p>
+<ol>
+<li>操作頻率少</li>
+<li>使用時間很短暫</li>
+</ol>
+<p>優點：</p>
+<ul>
+<li>看的到資料庫的最新資料</li>
+</ul>
+<p>缺點：</p>
+<ul>
+<li>對連線需求占用數比較高</li>
+</ul>
+<p>特性：</p>
+<ul>
+<li>手動連線、斷線（因此要注意Close和Dispose，也有語法糖using可以用）</li>
+</ul>
+<h3 id="SqlConnection"><a href="#SqlConnection" class="headerlink" title="SqlConnection"></a>SqlConnection</h3><p>對資料庫連線需要透過SqlConnection類別，通常會把連線字串放在appconfig檔（加密），或是電腦裡的環境變數。</p>
+<p><a href="https://docs.microsoft.com/zh-tw/dotnet/api/system.data.sqlclient.sqlconnection?view=dotnet-plat-ext-6.0">MSDN SqlConnection</a></p>
+<h3 id="SqlCommand"><a href="#SqlCommand" class="headerlink" title="SqlCommand"></a>SqlCommand</h3><p>程式對資料庫下T-SQL敘述或預存程序時要透過SqlCommand類別來使用</p>
+<p><a href="https://docs.microsoft.com/zh-tw/dotnet/api/system.data.sqlclient.sqlcommand?view=dotnet-plat-ext-6.0">MSDN SqlCommand</a></p>
+<h3 id="SqlParameter"><a href="#SqlParameter" class="headerlink" title="SqlParameter"></a>SqlParameter</h3><p>SqlCommand裡面的敘述如果直接用字串相接的方式（意指直接把使用者填入的資料寫入指料庫），會非常危險，因為不曉得使用者是不是有惡意攻擊，所以有了SqlParameter可以在寫入資料庫之前先透過SqlParameter過濾我們限縮的字元還有想要的型別，要注意的是如果型別錯誤會有例外錯誤。</p>
+<p><a href="https://docs.microsoft.com/zh-tw/dotnet/api/system.data.sqlclient.sqlparameter?view=dotnet-plat-ext-6.0">MSDN SqlParameter</a></p>
+<h2 id="離線模式"><a href="#離線模式" class="headerlink" title="離線模式"></a>離線模式</h2><h3 id="DataSet"><a href="#DataSet" class="headerlink" title="DataSet"></a>DataSet</h3><p>DataSet（資料集）是從資料來源撈出來的記憶體內部快取，是ADO .NET主要架構的元件之一，裡面包含了物件的集合<strong>DataTable</strong>，可以理解成ADO .NET DataSet 是記憶體駐留型資料表示法，<strong>獨立</strong>於資料來源，而且還有一致性的關聯式結構。</p>
+<p>DateSet的資料與資料來源無關，而DateSet與資料來源之間的溝通橋樑就是<br>DataAdapter，透過DataAdapter的方法進行基本的CRUD等等。</p>
+<p>這邊好像還有序列化要補充，待整理</p>
+<h3 id="DataTable"><a href="#DataTable" class="headerlink" title="DataTable"></a>DataTable</h3><p>DataTable在DateSet裡面，所以他只是記憶體中的一個資料表，可以使用DataRelation進行關聯式操作。</p>
+<h3 id="DataView"><a href="#DataView" class="headerlink" title="DataView"></a>DataView</h3><p>負責篩選排序搜尋</p>
+<p>這邊特別提到了父子關係，還沒搞清楚，待問老師<br><a href="https://docs.microsoft.com/zh-tw/dotnet/api/system.data.datarelation?view=net-6.0">MSDN DataRealation</a></p>
+<h3 id="DataAdapter"><a href="#DataAdapter" class="headerlink" title="DataAdapter"></a>DataAdapter</h3><p>使用DataAdapter提取資料時，因為要存取資料庫、尋找資料和處理資料，所以非常消耗時間，而且在提取時所有在伺服器上的資料列都會被鎖定，因此建議使用分段讀取。</p>
+<p><a href="https://docs.microsoft.com/zh-tw/dotnet/api/system.data.common.dataadapter.fill?view=net-6.0#System_Data_Common_DataAdapter_Fill_System_Data_DataSet_">[MSDN DataAdpter.Fill( )]</a></p>
+<p>DataAdapter是程式和資料庫之間互動的橋樑，兩者之間所有的操作都會經過DataAdapter<br><a href="https://docs.microsoft.com/zh-tw/dotnet/framework/data/adonet/populating-a-dataset-from-a-dataadapter">[MSDN DataAdapter]</a></p>
+<p>適合使用環境：</p>
+<ol>
+<li>操作頻率高</li>
+<li>使用時間很久</li>
+</ol>
+<p>優點：</p>
+<ul>
+<li>對連線需求占用率較低</li>
+</ul>
+<p>缺點：</p>
+<ul>
+<li>不能即時看到資料庫</li>
+</ul>
+<p>特性：</p>
+<ul>
+<li>自動連線、自動斷線</li>
+</ul>
+]]></content>
+      <categories>
+        <category>C#</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>LeetCode 15. 3Sum (Medium)</title>
+    <url>/2022/02/11/LeetCode-15-3Sum-Medium/</url>
+    <content><![CDATA[<p>Given an integer array nums, return all the triplets [nums[i], nums[j], nums[k]] such that i !&#x3D; j, i !&#x3D; k, and j !&#x3D; k, and nums[i] + nums[j] + nums[k] &#x3D;&#x3D; 0.</p>
+<p>Notice that the solution set must not contain duplicate triplets.</p>
+<p>Example :</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: nums = [-1,0,1,2,-1,-4]</span><br><span class="line">Output: [[-1,-1,2],[-1,0,1]]</span><br><span class="line"></span><br><span class="line">Input: nums = []</span><br><span class="line">Output: []</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Input: nums = [0]</span><br><span class="line">Output: []</span><br></pre></td></tr></table></figure>
+
+ <span id="more"></span>
+ <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"> public class Solution </span><br><span class="line">&#123;</span><br><span class="line">    public IList&lt;IList&lt;int&gt;&gt; ThreeSum(int[] nums)</span><br><span class="line">    &#123;</span><br><span class="line">            IList&lt;IList&lt;int&gt;&gt; result = new List&lt;IList&lt;int&gt;&gt;();</span><br><span class="line"></span><br><span class="line">            </span><br><span class="line">            if (nums == null || nums.Length &lt; 3)</span><br><span class="line">            &#123;</span><br><span class="line">                return result;</span><br><span class="line">            &#125;</span><br><span class="line">            </span><br><span class="line">            Array.Sort(nums);</span><br><span class="line"></span><br><span class="line">            for (int first = 0; first &lt; nums.Length - 2; first++)</span><br><span class="line">            &#123;</span><br><span class="line">                如果first是重複值就跳下一輪</span><br><span class="line">                if (first &gt; 0 &amp;&amp; nums[first] == nums[first - 1])</span><br><span class="line">                &#123;</span><br><span class="line">                    continue;</span><br><span class="line">                &#125;</span><br><span class="line">                int second = first + 1;</span><br><span class="line">                int third = nums.Length - 1;</span><br><span class="line">                </span><br><span class="line">                while (second &lt; third)</span><br><span class="line">                &#123;</span><br><span class="line">                    //second重複的話一樣跳下一輪</span><br><span class="line">                    if (nums[second] == nums[second - 1] &amp;&amp; second &gt; first + 1)</span><br><span class="line">                    &#123;</span><br><span class="line">                        second++;</span><br><span class="line">                        continue;</span><br><span class="line">                    &#125;</span><br><span class="line">                    int sum = nums[first] + nums[second] + nums[third];</span><br><span class="line">                    if (sum == 0)</span><br><span class="line">                    &#123;</span><br><span class="line">                        result.Add(new List&lt;int&gt;()</span><br><span class="line">                        &#123;</span><br><span class="line">                            nums[first],nums[second],nums[third]</span><br><span class="line">                        &#125;);</span><br><span class="line">                        second++;</span><br><span class="line">                        third--;</span><br><span class="line">                    &#125;</span><br><span class="line">                    else if (sum &lt; 0)</span><br><span class="line">                    &#123;</span><br><span class="line">                        second++;</span><br><span class="line">                    &#125;</span><br><span class="line">                    else</span><br><span class="line">                    &#123;</span><br><span class="line">                        third--;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            return result;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p> <img src="https://i.imgur.com/s1AiVbJ.png"></p>
+]]></content>
+      <categories>
+        <category>LeetCode</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>LeetCode 771. Jewels and Stones (Easy)</title>
+    <url>/2022/02/12/LeetCode-771-Jewels-and-Stones-Easy/</url>
+    <content><![CDATA[<p>You’re given strings jewels representing the types of stones that are jewels, and stones representing the stones you have. Each character in stones is a type of stone you have. You want to know how many of the stones you have are also jewels.</p>
+<p>Letters are case sensitive, so “a” is considered a different type of stone from “A”.</p>
+<p>Example :</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: jewels = &quot;aA&quot;, stones = &quot;aAAbbbb&quot;</span><br><span class="line">Output: 3</span><br><span class="line"></span><br><span class="line">Input: jewels = &quot;z&quot;, stones = &quot;ZZ&quot;</span><br><span class="line">Output: 0</span><br></pre></td></tr></table></figure>
+
+<span id="more"></span>
+
+<p>Constraints:</p>
+<ul>
+<li>1 &lt;&#x3D; jewels.length, stones.length &lt;&#x3D; 50</li>
+<li>jewels and stones consist of only English letters.</li>
+<li>All the characters of jewels are unique.</li>
+</ul>
+<p>這題偏簡單，搜尋一次stones裡面的所有字元，如果jewels裡有包含的話count++<br>可能還有其他解法會更快</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">public class Solution &#123;</span><br><span class="line">    public int NumJewelsInStones(string jewels, string stones) &#123;</span><br><span class="line">            int count = 0;</span><br><span class="line">            for (int i = 0; i&lt;stones.Length;i++)</span><br><span class="line">            &#123;</span><br><span class="line">                if (jewels.IndexOf(stones[i])!= -1)</span><br><span class="line">                &#123;</span><br><span class="line">                    count++;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            return count;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p><img src="https://i.imgur.com/5RRrt6v.png"></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">public class Solution &#123;</span><br><span class="line">    public int NumJewelsInStones(string jewels, string stones) &#123;</span><br><span class="line">            if (jewels == null || jewels == string.Empty || stones == null || stones == string.Empty)</span><br><span class="line">                return 0;</span><br><span class="line">            int res = 0;</span><br><span class="line">            HashSet&lt;char&gt; set = new HashSet&lt;char&gt;();</span><br><span class="line"></span><br><span class="line">            foreach (var c in jewels)</span><br><span class="line">                set.Add(c);</span><br><span class="line"></span><br><span class="line">            foreach (var c in stones)</span><br><span class="line">                if (set.Contains(c))</span><br><span class="line">                    res++;</span><br><span class="line"></span><br><span class="line">            return res;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p><img src="https://i.imgur.com/hUfvEpZ.png"><br>原本以為用雜湊之後快很多，結果發現不是XDD<br>重點是在提早跳出這段而已，看來能盡早return真的很重要</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">if (jewels.Length ==0 || stones.Length ==0)</span><br><span class="line">    return 0;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">public class Solution &#123;</span><br><span class="line">    public int NumJewelsInStones(string jewels, string stones) &#123;</span><br><span class="line">            if (jewels.Length ==0 || stones.Length ==0)</span><br><span class="line">                return 0;</span><br><span class="line">            int count = 0;</span><br><span class="line">            for (int i = 0; i&lt;stones.Length;i++)</span><br><span class="line">            &#123;</span><br><span class="line">                if (jewels.IndexOf(stones[i])!= -1)</span><br><span class="line">                &#123;</span><br><span class="line">                    count++;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            return count;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="https://i.imgur.com/e9jydbM.png"></p>
+]]></content>
+      <categories>
+        <category>LeetCode</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>LeetCode 283. Move Zeroes (Easy)</title>
+    <url>/2022/02/15/LeetCode-283-Move-Zeroes-Easy/</url>
+    <content><![CDATA[<p>Given an integer array nums, move all 0’s to the end of it while maintaining the relative order of the non-zero elements.</p>
+<p>Note that you must do this in-place without making a copy of the array.</p>
+<p>Example :</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: nums = [0,1,0,3,12]</span><br><span class="line">Output: [1,3,12,0,0]</span><br><span class="line"></span><br><span class="line">Input: nums = [0]</span><br><span class="line">Output: [0]</span><br></pre></td></tr></table></figure>
+<p>Constraints:</p>
+<ul>
+<li>1 &lt;&#x3D; nums.length &lt;&#x3D; 104</li>
+<li>-231 &lt;&#x3D; nums[i] &lt;&#x3D; 231 - 1</li>
+</ul>
+<p>Follow up: Could you minimize the total number of operations done?</p>
+<span id="more"></span>
+
+<p>這題目感覺也是偏簡單，最後我用的步驟跟其他人比起來多一個迴圈XD</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">public class Solution &#123;</span><br><span class="line">    public void MoveZeroes(int[] nums) &#123;</span><br><span class="line">            int zero = 0;</span><br><span class="line">            int index = 0;</span><br><span class="line">            for (int i = 0; i &lt; nums.Length; i++)</span><br><span class="line">            &#123;</span><br><span class="line"></span><br><span class="line">                if (nums[i] != 0)</span><br><span class="line">                &#123;</span><br><span class="line">                    nums[index] = nums[i];</span><br><span class="line">                    index++;</span><br><span class="line"></span><br><span class="line">                &#125;</span><br><span class="line">                else &#123; zero++; &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            for (int i = 0; i &lt; zero; i++)</span><br><span class="line">            &#123;</span><br><span class="line">                nums[index] = 0;</span><br><span class="line">                index++;</span><br><span class="line">            &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>看到覺得很佩服的寫法</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">public static void MoveZeros(int[] nums)</span><br><span class="line">&#123;</span><br><span class="line">	if (nums == null || nums.Length &lt;= 1)</span><br><span class="line">		return;</span><br><span class="line"></span><br><span class="line">	int curr = 0;</span><br><span class="line">	int next = 1;</span><br><span class="line"></span><br><span class="line">	while (next &lt;= nums.Length - 1)</span><br><span class="line">	&#123;</span><br><span class="line">		if (nums[curr] == 0)</span><br><span class="line">		&#123;</span><br><span class="line">			if (nums[next] == 0)</span><br><span class="line">			&#123;</span><br><span class="line">				next++;</span><br><span class="line">				continue;</span><br><span class="line">			&#125;</span><br><span class="line">			else</span><br><span class="line">			&#123;</span><br><span class="line">				nums[curr] = nums[next];</span><br><span class="line">				nums[next] = 0;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		curr++;</span><br><span class="line">		next++;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>]]></content>
+      <categories>
+        <category>LeetCode</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>自我問題歸納</title>
+    <url>/2022/02/05/%E8%87%AA%E6%88%91%E5%95%8F%E9%A1%8C%E6%AD%B8%E7%B4%8D/</url>
+    <content><![CDATA[<h4 id="學習方向建議"><a href="#學習方向建議" class="headerlink" title="學習方向建議"></a>學習方向建議</h4><ul>
+<li>養成習慣，學習是痛苦的，不要三天捕魚兩天曬網，技能沒累積起來不進反退，一個禮拜要有三天以上學習，時間可以不用多，大概一顆番茄鐘25分鐘就好了。</li>
+<li>心態很重要，保持樂觀開放的狀態。</li>
+<li>留意一句話，任何人都不要相信，自己寫的Code也不要信。</li>
+<li>不要太CARE自己寫的東西是錯誤資訊，反正也不太會有人看你的文章，那些只是讓自己整理提升自我用的，學習是輸入，寫文章寫程式是輸出，要花時間輸出才知道自己會不會。</li>
+<li>文章不要是自己抄別人的結果，而是自己深思熟慮想出來並且測試後的結果。<span id="more"></span></li>
+</ul>
+<h4 id="問題"><a href="#問題" class="headerlink" title="問題"></a>問題</h4><h5 id="一直在學習，不知道自己有沒有進步"><a href="#一直在學習，不知道自己有沒有進步" class="headerlink" title="一直在學習，不知道自己有沒有進步"></a><strong>一直在學習，不知道自己有沒有進步</strong></h5><ul>
+<li>進步是比較出來的，不要跟人家比，壓力會很大，跟自己比就好了，舉例在學某個技術的時候幫自己列個里程碑，學之前先想要解決什麼問題，學完之後去挑戰看看那個里程碑，達成了也是一種紀錄。</li>
+<li>寫部落格，把所學會的東西寫下來，寫下來會自己發現不足的地方，為了寫出一篇文章會主動去找更多的資料去補足觀念不足的地方。</li>
+<li>利用社群發問與人交流取得回饋，雖然回饋不一定是好的，但久了你自己也會分辨對錯。</li>
+<li>寫程式就像馬拉松，不可能一氣呵成達到。</li>
+<li>做貢獻、Side project、</li>
+</ul>
+<h5 id="非本科找第一份工作如何判斷適合轉職者或是新手"><a href="#非本科找第一份工作如何判斷適合轉職者或是新手" class="headerlink" title="非本科找第一份工作如何判斷適合轉職者或是新手"></a>非本科找第一份工作如何判斷適合轉職者或是新手</h5><ul>
+<li>如果可以的話優先選擇選有大量學習機會、有前輩可以帶、人不要太少的地方，前提是有找到工作啦，有人願意收就沒什麼好挑的了XD</li>
+<li>你願意犧牲什麼? 挑公司的時候公司也在挑你，企業文化一定有你喜歡的地方也有你不喜歡的地方，你願意犧牲什麼東西讓你下次可以挑公司，你一開始沒有籌碼去談判，進去時就要想你是為了什麼進去的，可以犧牲什麼換取到更大的利益。</li>
+<li>專案型公司和產品型公司有差別，首選有學習機會的地方、有人可以模仿學習的地方。</li>
+</ul>
+<h5 id="學習方法跟技巧，掌握技術學的很慢學習方法也還在摸索"><a href="#學習方法跟技巧，掌握技術學的很慢學習方法也還在摸索" class="headerlink" title="學習方法跟技巧，掌握技術學的很慢學習方法也還在摸索"></a>學習方法跟技巧，掌握技術學的很慢學習方法也還在摸索</h5><ul>
+<li>一開始都是學的慢的，總而言之就是慢慢累積，基本功紮實的話後續學什麼都會很快很順利，可以探索自己在什麼情況下吸收效率會很好，例如：看書、部落格、文章、看教學影片、問朋友、同事討論，有些事情卡關了就是卡關了，你重新看好幾次也不一定會懂，可以慢慢找適合自己的教材再花心思好好看懂， 一樣的話，緩慢前進就好。</li>
+</ul>
+<h5 id="面試的時候怎麼看面試者的潛力（警惕自己被面試的時候）"><a href="#面試的時候怎麼看面試者的潛力（警惕自己被面試的時候）" class="headerlink" title="面試的時候怎麼看面試者的潛力（警惕自己被面試的時候）"></a>面試的時候怎麼看面試者的潛力（警惕自己被面試的時候）</h5><p>短短幾十分鐘看出一個人的潛力幾乎是不可能的事情，通常從問幾句話就會有感覺，履歷表幾乎都是假的沒有參考價值，有時候會用提問的方式問很深入，看看求職者面對未知問題的反應如何。</p>
+<h6 id="學習能力、學習方法、學習態度"><a href="#學習能力、學習方法、學習態度" class="headerlink" title="學習能力、學習方法、學習態度"></a>學習能力、學習方法、學習態度</h6><ul>
+<li>盡量問公司問題，例如問貴公司的部門組成，一個專案執行有用到哪些技術工具，又是如何去交辦的，怎麼會有這個職缺，主要要負責什麼要和哪些人配合，加班狀況等等，取得資訊之後才有辦法去衡量。</li>
+<li>表達想要進步的迫切感，願意努力，非本科出來的話積極度很重要。</li>
+</ul>
+<h4 id="突破困境"><a href="#突破困境" class="headerlink" title="突破困境"></a>突破困境</h4><ul>
+<li>每個人都有每個人的人生，逃避不了只能面對（個性、家庭、工作環境），但不管怎麼樣就是不要找太多的藉口，可以找理由讓自己舒服一點，自己的人生還是要自己掌握，其他人也不能幫你什麼只能給你一些建議。</li>
+<li>寫程式要自己找樂趣，寫的時候慢慢累積，如果你不排斥的話就慢慢走下去，而不是很努力卻看不到效果，最後就想退出了，有時候東西只是再累積每一個點，最後才會有一個集大成的東西出來。</li>
+<li>學任何東西都不會是白費的，舉例你學程式邏輯最後不寫程式，但那些邏輯一樣會有助於你在工作領域上的發展。</li>
+<li>機會都是自己找來的。</li>
+<li>知道自己哪裡不懂哪裡懂，慢慢的把自己不懂的地方補齊。</li>
+</ul>
+<h6 id="參考資料"><a href="#參考資料" class="headerlink" title="參考資料"></a>參考資料</h6><p><a href="https://www.facebook.com/will.fans/videos/1788974251285389">https://www.facebook.com/will.fans/videos/1788974251285389</a></p>
+]]></content>
+      <tags>
+        <tag>菜雞</tag>
+        <tag>學習心得</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>LeetCode 451. Sort Characters By Frequency (Medium)</title>
+    <url>/2022/02/14/LeetCode-451-Sort-Characters-By-Frequency-Medium/</url>
+    <content><![CDATA[<p>Given a string s, sort it in decreasing order based on the frequency of the characters. The frequency of a character is the number of times it appears in the string.</p>
+<p>Return the sorted string. If there are multiple answers, return any of them.</p>
+<p> Example:<br> <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"> Input: s = &quot;tree&quot;</span><br><span class="line">Output: &quot;eert&quot;</span><br><span class="line">Explanation: &#x27;e&#x27; appears twice while &#x27;r&#x27; and &#x27;t&#x27; both appear once.</span><br><span class="line">So &#x27;e&#x27; must appear before both &#x27;r&#x27; and &#x27;t&#x27;. Therefore &quot;eetr&quot; is also a valid answer.</span><br><span class="line"></span><br><span class="line">Input: s = &quot;cccaaa&quot;</span><br><span class="line">Output: &quot;aaaccc&quot;</span><br><span class="line">Explanation: Both &#x27;c&#x27; and &#x27;a&#x27; appear three times, so both &quot;cccaaa&quot; and &quot;aaaccc&quot; are valid answers.</span><br><span class="line">Note that &quot;cacaca&quot; is incorrect, as the same characters must be together.</span><br><span class="line"></span><br><span class="line">Input: s = &quot;Aabb&quot;</span><br><span class="line">Output: &quot;bbAa&quot;</span><br><span class="line">Explanation: &quot;bbaA&quot; is also a valid answer, but &quot;Aabb&quot; is incorrect.</span><br><span class="line">Note that &#x27;A&#x27; and &#x27;a&#x27; are treated as two different characters.</span><br></pre></td></tr></table></figure><br> <span id="more"></span><br>Constraints:</p>
+<ul>
+<li>1 &lt;&#x3D; s.length &lt;&#x3D; 5 * 105</li>
+<li>s consists of uppercase and lowercase English letters and digits.</li>
+</ul>
+<p>計算字串內個別字元的個數大小，再排序後回傳</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">public class Solution &#123;</span><br><span class="line">    public string FrequencySort(string s) &#123;</span><br><span class="line">            if (s == null || s.Length &lt;= 1) </span><br><span class="line">            &#123;</span><br><span class="line">                return s;</span><br><span class="line">            &#125;</span><br><span class="line">            var map = new Dictionary&lt;char, int&gt;();</span><br><span class="line">            var cs = s.ToCharArray();</span><br><span class="line">            //把裡面的值塞進Dictionary裡面統計</span><br><span class="line">            for (int i = 0; i &lt; cs.Length; i++)</span><br><span class="line">            &#123;</span><br><span class="line">                if (map.ContainsKey(cs[i]))</span><br><span class="line">                &#123;</span><br><span class="line">                    map[cs[i]]++;</span><br><span class="line">                &#125; else</span><br><span class="line">                &#123;</span><br><span class="line">                    map.Add(cs[i], 1);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            //先依照出現次數排序</span><br><span class="line">            var sort = map.OrderByDescending(x =&gt; x.Value);</span><br><span class="line">            var result = new StringBuilder();</span><br><span class="line">            //還原字串</span><br><span class="line">            foreach (var item in sort)</span><br><span class="line">            &#123;</span><br><span class="line">                for (int i = 0;i &lt;item.Value;i++)</span><br><span class="line">                &#123;</span><br><span class="line">                    result.Append(item.Key);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            return result.ToString();        </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h6 id="tags-LeetCode"><a href="#tags-LeetCode" class="headerlink" title="tags: LeetCode"></a>tags: <code>LeetCode</code></h6>]]></content>
+      <categories>
+        <category>LeetCode</category>
+      </categories>
+  </entry>
+</search>
